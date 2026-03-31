@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Movie</title>
+</head>
+<body style="font-family:Arial; margin:40px;">
+
+    <h1>Welcome to Movie App</h1>
+
+    <a href="addMovie">Add Movies</a> <br>
+    <a href="searchMovie">Search Movie By Category</a>
+
+    <br><br>
+
+    <form th:action="@{/saveMovie}" th:method="post" th:object="${newMovie}">
+
+        Movie Name:
+        <input type="text" th:field="*{name}" />
+        <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color:red;"></span>
+
+        <br><br>
+
+        Give Rating:
+        <input type="text" th:field="*{rating}" />
+        <span th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}" style="color:red;"></span>
+
+        <br><br>
+
+        Select Genre:
+        <select th:field="*{genre}">
+            <option value="">--Select--</option>
+            <option value="Drama">Drama</option>
+            <option value="Fiction">Fiction</option>
+            <option value="Satire">Satire</option>
+        </select>
+        <span th:if="${#fields.hasErrors('genre')}" th:errors="*{genre}" style="color:red;"></span>
+
+        <br><br>
+
+        <button type="submit">Add Movie</button>
+
+    </form>
+
+</body>
+</html>

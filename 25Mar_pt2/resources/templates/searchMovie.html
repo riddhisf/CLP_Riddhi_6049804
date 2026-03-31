@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Search Movie</title>
+</head>
+<body style="font-family:Arial; margin:40px;">
+
+    <h1>Welcome to Movie App</h1>
+
+    <a href="addMovie">Add Movies</a> <br>
+    <a href="searchMovie">Search Movie By Category</a>
+
+    <br><br>
+
+    <form th:action="@{/searchByGenre}" th:method="post" th:object="${searchMovie}">
+
+        Search Movie:
+        <select th:field="*{genre}">
+            <option value="">--Select--</option>
+            <option value="Drama">Drama</option>
+            <option value="Fiction">Fiction</option>
+            <option value="Satire">Satire</option>
+        </select>
+
+        <button type="submit">Search Movie</button>
+
+    </form>
+
+    <br>
+
+    <!-- results table — only shows if movies list is present -->
+    <table th:if="${movies}" border="1" cellpadding="10"
+           style="border-collapse:collapse;">
+        <tr>
+            <th>Movie Name</th>
+            <th>Rating</th>
+        </tr>
+        <tr th:each="m : ${movies}">
+            <td th:text="${m.name}"></td>
+            <td th:text="${m.rating}"></td>
+        </tr>
+    </table>
+
+</body>
+</html>
