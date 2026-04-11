@@ -4,6 +4,7 @@ import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.orderservice.dto.OrderRequest;
@@ -20,10 +21,18 @@ public class OrderService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @CircuitBreaker(name = "orderServiceCB", fallbackMethod = "orderFallback")
     public OrderResponse createOrder(OrderRequest request) {
 
-        User user = fetchUser(request.getUserId());
-        Product product = fetchProduct(request.getProductId());
+        User user = restTemplate.getForObject(
+                "http://USERSERVICE/users/" + request.getUserId(),
+                User.class
+        );
+
+        Product product = restTemplate.getForObject(
+                "http://PRODUCTSERVICE/products/" + request.getProductId(),
+                Product.class
+        );
 
         if (request.getQuantity() > product.getQuantity()) {
             throw new InsufficientStockException(
@@ -43,27 +52,20 @@ public class OrderService {
         );
     }
 
-    @CircuitBreaker(name = "orderServiceCB", fallbackMethod = "userFallback")
-    public User fetchUser(Integer userId) {
-        return restTemplate.getForObject(
-                "http://USERSERVICE/users/" + userId,
-                User.class
+    public OrderResponse orderFallback(OrderRequest request, Exception ex) {
+    	if (ex instanceof HttpClientErrorException) {
+            throw (HttpClientErrorException) ex;
+        }
+    	else if(ex instanceof InsufficientStockException) {
+    		throw (InsufficientStockException) ex;
+    	}
+    	
+        return new OrderResponse(
+                -1,
+                "Unknown",
+                "Unknown",
+                request.getQuantity(),
+                0.0
         );
-    }
-
-    @CircuitBreaker(name = "orderServiceCB", fallbackMethod = "productFallback")
-    public Product fetchProduct(Integer productId) {
-        return restTemplate.getForObject(
-                "http://PRODUCTSERVICE/products/" + productId,
-                Product.class
-        );
-    }
-
-    public User userFallback(Integer userId, Exception ex) {
-        throw new RuntimeException("User Service Unavailable");
-    }
-
-    public Product productFallback(Integer productId, Exception ex) {
-        throw new RuntimeException("Product Service Unavailable");
     }
 }
